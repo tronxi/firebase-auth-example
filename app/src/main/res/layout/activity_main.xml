@@ -23,5 +23,18 @@
         android:layout_height="wrap_content"
         android:text="Borrar cuenta"
         android:onClick="deleteAccount"/>
-
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Buscar"
+        android:onClick="find"/>
+    <Spinner
+        android:id="@+id/label_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="24dp" />
 </LinearLayout>

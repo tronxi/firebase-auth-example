@@ -4,7 +4,7 @@
             "outputFile": "/Users/sergio/workspace/master/android/FirebaseAuthExample/app/build/intermediates/incremental/mergeDebugResources/merged.dir/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-                    "source": "/Users/sergio/.gradle/caches/transforms-2/files-2.1/64cde8c2cbad19e210066606a0a99d67/jetified-play-services-auth-17.0.0/res/values-watch-v20/values.xml",
+                    "source": "/Users/sergio/.gradle/caches/transforms-2/files-2.1/6c7200807ab49b715af13edd359bba19/jetified-play-services-auth-17.0.0/res/values-watch-v20/values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11",
                         "startColumns": "0,0,0,0,0,0,0,0",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "/Users/sergio/.gradle/caches/transforms-2/files-2.1/85617a0bd0c144064dce7eaf3664b2d0/appcompat-1.2.0/res/values-watch-v20/values-watch-v20.xml",
+                    "source": "/Users/sergio/.gradle/caches/transforms-2/files-2.1/b9c0dfc0e8adaeca43121c09410b9b17/appcompat-1.2.0/res/values-watch-v20/values-watch-v20.xml",
                     "from": {
                         "startLines": "2,5,8",
                         "startColumns": "4,4,4",
