@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveData(View view) {
-        User user = new User("Sergio", "garcia", 1997);
+        User user = new User("Sergio", "garcia", 1997, new Address("a", "madrid"));
         firebaseFirestore.collection("users")
                 .add(user)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {

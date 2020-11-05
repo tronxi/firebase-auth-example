@@ -5,11 +5,13 @@ public class User {
     private String first;
     private String last;
     private int born;
+    private Address address;
 
-    public User(String first, String last, int born) {
+    public User(String first, String last, int born, Address address) {
         this.first = first;
         this.last = last;
         this.born = born;
+        this.address = address;
     }
 
     public User() {
@@ -40,12 +42,21 @@ public class User {
         this.born = born;
     }
 
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "first='" + first + '\'' +
                 ", last='" + last + '\'' +
                 ", born=" + born +
+                ", address=" + address +
                 '}';
     }
 }
