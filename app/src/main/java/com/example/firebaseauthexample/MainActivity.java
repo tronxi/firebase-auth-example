@@ -4,20 +4,30 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,14 +43,20 @@ public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "LOG_TAG";
 
+    //FirebaseAuth
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
     private String token;
+    private final int RC_SIGN_IN = 2020;
+
+    //Firestore
+    private FirebaseFirestore firebaseFirestore;
+    ListenerRegistration registration;
+
+    //Retrofit
+    private ApiService apiService;
     private Spinner spinner;
 
-    private ApiService apiService;
-
-    private final int RC_SIGN_IN = 2020;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,29 +65,32 @@ public class MainActivity extends AppCompatActivity {
 
         spinner = findViewById(R.id.label_spinner);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.covid19tracking.narrativa.com")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        initFirestore();
 
-        apiService = retrofit.create(ApiService.class);
+        initRetrofit();
+
+        initFirebaseAuth();
 
         spinner.setOnItemSelectedListener(new SpinnerListener(this));
 
-        authStateListener = getAuthStateListener();
-        firebaseAuth = FirebaseAuth.getInstance();
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         firebaseAuth.addAuthStateListener(authStateListener);
+
+        addFirestoreListener();
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         firebaseAuth.removeAuthStateListener(authStateListener);
+
+        removeFirestoreListener();
     }
 
     @Override
@@ -85,6 +104,12 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         }
+    }
+
+    //FirebaseAuth
+    private void initFirebaseAuth() {
+        authStateListener = getAuthStateListener();
+        firebaseAuth = FirebaseAuth.getInstance();
     }
 
     private FirebaseAuth.AuthStateListener getAuthStateListener() {
@@ -120,6 +145,41 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+
+    public void deleteAccount(View view) {
+        AuthUI.getInstance()
+                .delete(this)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Log.i(TAG, "delete");
+                        launchAuth();
+                    }
+                });
+    }
+
+    private void launchAuth() {
+        startActivityForResult(
+                AuthUI.getInstance().
+                        createSignInIntentBuilder().
+                        setAvailableProviders(Arrays.asList(
+                                new AuthUI.IdpConfig.GoogleBuilder().build()
+                        )).
+                        build(),
+                RC_SIGN_IN
+        );
+    }
+
+    //Retrofit
+    private void initRetrofit() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.covid19tracking.narrativa.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        apiService = retrofit.create(ApiService.class);
+    }
+
     public void find(View view) {
         Call<Example> call_async = apiService.getCountries();
 
@@ -147,28 +207,60 @@ public class MainActivity extends AppCompatActivity {
         spinner.setAdapter(adp);
     }
 
+    //Firestore
+    private void initFirestore() {
+        firebaseFirestore = FirebaseFirestore.getInstance();
+    }
 
-    public void deleteAccount(View view) {
-        AuthUI.getInstance()
-                .delete(this)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
+    public void saveData(View view) {
+        User user = new User("Sergio", "garcia", 1997);
+        firebaseFirestore.collection("users")
+                .add(user)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Log.i(TAG, "delete");
-                        launchAuth();
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
                     }
                 });
     }
 
-    private void launchAuth() {
-        startActivityForResult(
-                AuthUI.getInstance().
-                        createSignInIntentBuilder().
-                        setAvailableProviders(Arrays.asList(
-                                new AuthUI.IdpConfig.GoogleBuilder().build()
-                        )).
-                        build(),
-                RC_SIGN_IN
-        );
+    public void readData(View view) {
+        firebaseFirestore.collection("users")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                User user = document.toObject(User.class);
+                                Log.d(TAG, document.getId() + " => " + user.toString());
+                            }
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+    }
+
+    private void addFirestoreListener() {
+        registration = firebaseFirestore.collection("users").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (DocumentChange dc : value.getDocumentChanges()) {
+                    User user = dc.getDocument().toObject(User.class);
+                    Log.i(TAG, "EVENTO " + user.toString());
+                }
+            }
+        });
+    }
+
+    private void removeFirestoreListener() {
+        registration.remove();
     }
 }

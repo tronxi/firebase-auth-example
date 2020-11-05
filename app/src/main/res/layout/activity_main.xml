@@ -24,9 +24,19 @@
         android:text="Borrar cuenta"
         android:onClick="deleteAccount"/>
     <Button
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Guardar"
+        android:onClick="saveData"/>
+    <Button
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Leer Datos"
+        android:onClick="readData"/>
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Buscar"
+        android:text="Buscar API"
         android:onClick="find"/>
     <Spinner
         android:id="@+id/label_spinner"
