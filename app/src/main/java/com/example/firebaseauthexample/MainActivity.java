@@ -252,9 +252,13 @@ public class MainActivity extends AppCompatActivity {
         registration = firebaseFirestore.collection("users").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                for (DocumentChange dc : value.getDocumentChanges()) {
-                    User user = dc.getDocument().toObject(User.class);
-                    Log.i(TAG, "EVENTO " + user.toString());
+                if(!value.getMetadata().hasPendingWrites())
+                    for (DocumentChange dc : value.getDocumentChanges()) {
+                        User user = dc.getDocument().toObject(User.class);
+                        Log.i(TAG, "EVENTO " + user.toString());
+                    }
+                else {
+                    Log.i(TAG, "local change");
                 }
             }
         });
